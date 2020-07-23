@@ -1,7 +1,8 @@
 from pyspark.sql import SparkSession
+from pyspark.sql.functions import *
 
 # define schema for our data using DDL
-schema = "`Id` INT, `First` STRING, `LAST` STRING, `Url` STRING, \
+schema = "`Id` INT, `First` STRING, `Last` STRING, `Url` STRING, \
             `Published` STRING, `Hits` INT, `Campaigns` ARRAY<STRING>"
 
 # Create static data
@@ -28,4 +29,32 @@ if __name__ == "__main__":
     blogs_df.show()
     # print the schema used by Spark to process the DataFrame
     print(blogs_df.printSchema())
+
+    print("\n***Big Hitters***\n")
     
+    # computed column
+    blogs_df.withColumn("Big Hitters", (expr("Hits > 10000"))).show()
+
+    print("\n***Concatenated Column***\n")
+    blogs_df.withColumn("AuthorsId", (concat(expr("First"), expr("Last"), expr("Id")))).select(col("AuthorsId")).show(5)
+
+    # column selection statements
+    # these statements return the same value,
+    # showing that expr is the same as a col
+    # method call
+    print("\n***expr***\n")
+    blogs_df.select(expr("Hits")).show(2)
+
+    print("\n***col***\n")
+    blogs_df.select(col("Hits")).show(2)
+
+    print("\n***select***\n")
+    blogs_df.select("Hits").show(2)
+
+    # Sort by column "Id" in descending order
+    # "col" is an explicit  to return a Column object
+    # "$" is a function in Spark that converts column Named Id to a Column
+    # print("\n***select with col***\n")
+    # blogs_df.sort(col("Id").desc).show()
+    # print("\n***select with $***\n")
+    # blogs_df.sort($"Id".desc).show()
